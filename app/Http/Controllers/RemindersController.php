@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Reminder;
 use DateTime;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Request as RequestFacade;
 
 class RemindersController extends Controller
 {
@@ -14,65 +12,44 @@ class RemindersController extends Controller
     {
         if ($request->has('user')) {
             $user = $request->get('user');
-
-            return Reminder::where('user', $user)->get();
+            $reminders = Reminder::where('user', $user)->get();
+        } else {
+            $reminders = Reminder::all();
         }
 
-        return Reminder::all();
+        return view('reminders', ['reminders' => $reminders]);
     }
 
     public function store(Request $request)
     {
-        return Reminder::create($request->json()->all());
+        $this->validate($request, [
+            'user' => 'required',
+            'when' => 'required',
+            'reminder' => 'required',
+        ]);
+
+        $reminder = Reminder::create($request->all());
+
+        return view('reminder', ['reminder' => $reminder]);
     }
 
     public function show(Reminder $reminder)
     {
-        return $reminder;
+        return view('reminder', ['reminder' => $reminder]);
     }
 
-    public function reminded(Reminder $reminder)
+    public function update(Request $request)
     {
-        $reminder->remindedAt = new DateTime;
-        $reminder->save();
+        $id = $request->get('id');
 
-        return $reminder;
-    }
-
-    public function cancel(Reminder $reminder)
-    {
-        $reminder->canceledAt = new DateTime;
-        $reminder->save();
-
-        return $reminder;
-    }
-
-    public function update(Reminder $reminder)
-    {
-        $data = RequestFacade::json()->all();
-
-        if (count($data) === 0) {
-            throw new Exception('must specify remindedAt or canceledAt');
-        }
-
-        if (count($data) > 1) {
-            throw new Exception('may only specify either remindedAt or canceledAt');
-        }
-
-        if (!isset($data['remindedAt']) && !isset($data['canceledAt'])) {
-            throw new Exception('must specify either remindedAt or canceledAt');
-        }
-
-        if (isset($data['remindedAt'])) {
-            $reminder->remindedAt = new DateTime;
-        }
-
-        if (isset($data['canceledAt'])) {
+        if ($request->has('cancel')) {
+            $reminder = Reminder::find($id);
             $reminder->canceledAt = new DateTime;
+            $reminder->save();
         }
 
-        $reminder->save();
+        $reminder = Reminder::find($id);
 
-        return $reminder;
+        return view('reminder', ['reminder' => $reminder]);
     }
 }
