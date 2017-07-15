@@ -12,7 +12,7 @@
 
 <div class="container">
 
-    <form method="POST" action="/">
+    <form method="POST" action="/new">
         {{ csrf_field() }}
         <div class="form-group">
             <label for="user">User:</label>
