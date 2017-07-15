@@ -31,48 +31,27 @@ class RemindersApiController extends Controller
         return $reminder;
     }
 
-    public function reminded(Reminder $reminder)
-    {
-        $reminder->remindedAt = new DateTime;
-        $reminder->save();
-
-        return $reminder;
-    }
-
-    public function cancel(Reminder $reminder)
-    {
-        $reminder->canceledAt = new DateTime;
-        $reminder->save();
-
-        return $reminder;
-    }
-
     public function update(Reminder $reminder)
     {
         $data = RequestFacade::json()->all();
 
-        if (count($data) === 0) {
-            throw new Exception('must specify remindedAt or canceledAt');
+        $reminded = $data['reminded'] ?? false;
+        $canceled = $data['canceled'] ?? false;
+
+        if ($reminded && $canceled) {
+            throw new Exception('must specify either reminded or canceled');
         }
 
-        if (count($data) > 1) {
-            throw new Exception('may only specify either remindedAt or canceledAt');
-        }
-
-        if (!isset($data['remindedAt']) && !isset($data['canceledAt'])) {
-            throw new Exception('must specify either remindedAt or canceledAt');
-        }
-
-        if (isset($data['remindedAt'])) {
+        if ($reminded) {
             $reminder->remindedAt = new DateTime;
+            $reminder->save();
         }
 
-        if (isset($data['canceledAt'])) {
+        if ($canceled) {
             $reminder->canceledAt = new DateTime;
+            $reminder->save();
         }
 
-        $reminder->save();
-
-        return $reminder;
+        return Reminder::find($reminder->getId());
     }
 }
