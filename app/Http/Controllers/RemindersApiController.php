@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Reminder;
 use DateTime;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Request as RequestFacade;
 
 class RemindersApiController extends Controller
 {
@@ -16,6 +14,11 @@ class RemindersApiController extends Controller
             $user = $request->get('user');
 
             return Reminder::where('user', $user)->get();
+        }
+
+        if ($request->has('remind')) {
+            $now = new DateTime();
+            return Reminder::where('when', '<', $now)->get();
         }
 
         return Reminder::all();
@@ -31,27 +34,45 @@ class RemindersApiController extends Controller
         return $reminder;
     }
 
-    public function update(Reminder $reminder)
+    public function cancel(Request $request)
     {
-        $data = RequestFacade::json()->all();
+        $params = $request->json()->all();
 
-        $reminded = $data['reminded'] ?? false;
-        $canceled = $data['canceled'] ?? false;
-
-        if ($reminded && $canceled) {
-            throw new Exception('must specify either reminded or canceled');
+        if (!isset($params['id'])) {
+            return ['error' => 'no id'];
         }
 
-        if ($reminded) {
-            $reminder->remindedAt = new DateTime;
-            $reminder->save();
+        $reminderId = $params['id'];
+        $reminder = Reminder::find($reminderId);
+
+        if (!$reminder) {
+            return ['error' => "$reminderId not found"];
         }
 
-        if ($canceled) {
-            $reminder->canceledAt = new DateTime;
-            $reminder->save();
+        $reminder->canceledAt = new DateTime;
+        $reminder->save();
+
+        return Reminder::find($reminderId);
+    }
+
+    public function reminded(Request $request)
+    {
+        $params = $request->json()->all();
+
+        if (!isset($params['id'])) {
+            return ['error' => 'no id'];
         }
 
-        return Reminder::find($reminder->getId());
+        $reminderId = $params['id'];
+        $reminder = Reminder::find($reminderId);
+
+        if (!$reminder) {
+            return ['error' => "$reminderId not found"];
+        }
+
+        $reminder->remindedAt = new DateTime;
+        $reminder->save();
+
+        return Reminder::find($reminderId);
     }
 }
