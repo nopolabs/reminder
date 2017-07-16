@@ -40,7 +40,7 @@ class RemindersApiController extends Controller
         return $reminder;
     }
 
-    public function cancel(Request $request)
+    public function update(Request $request)
     {
         $params = $request->json()->all();
 
@@ -55,28 +55,21 @@ class RemindersApiController extends Controller
             return ['error' => "$reminderId not found"];
         }
 
-        $reminder->canceledAt = new DateTime;
-        $reminder->save();
+        $reminded = $params['reminded'] ?? false;
+        $canceled = $params['canceled'] ?? false;
 
-        return Reminder::find($reminderId);
-    }
-
-    public function reminded(Request $request)
-    {
-        $params = $request->json()->all();
-
-        if (!isset($params['id'])) {
-            return ['error' => 'no id'];
+        if (!$reminded && !$canceled) {
+            return $reminder;
         }
 
-        $reminderId = $params['id'];
-        $reminder = Reminder::find($reminderId);
-
-        if (!$reminder) {
-            return ['error' => "$reminderId not found"];
+        if ($reminded) {
+            $reminder->remindedAt = new DateTime;
         }
 
-        $reminder->remindedAt = new DateTime;
+        if ($canceled) {
+            $reminder->canceledAt = new DateTime;
+        }
+
         $reminder->save();
 
         return Reminder::find($reminderId);
