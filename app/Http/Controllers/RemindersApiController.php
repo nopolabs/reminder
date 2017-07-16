@@ -49,7 +49,7 @@ class RemindersApiController extends Controller
     {
         $params = $request->json()->all();
 
-        Log::debug("STORE: ".json_encode($params));
+        Log::debug("UPDATE: ".json_encode($params));
 
         if (!isset($params['id'])) {
             return ['error' => 'no id'];
