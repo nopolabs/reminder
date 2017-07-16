@@ -13,12 +13,18 @@ class RemindersApiController extends Controller
         if ($request->has('user')) {
             $user = $request->get('user');
 
-            return Reminder::where('user', $user)->get();
+            return Reminder::where('user', $user)
+                ->whereNull('canceledAt')
+                ->whereNull('remindedAt')
+                ->get();
         }
 
         if ($request->has('remind')) {
             $now = new DateTime();
-            return Reminder::where('when', '<', $now)->get();
+            return Reminder::where('when', '<', $now)
+                ->whereNull('canceledAt')
+                ->whereNull('remindedAt')
+                ->get();
         }
 
         return Reminder::all();
