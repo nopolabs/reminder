@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Reminder;
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RemindersApiController extends Controller
 {
@@ -32,7 +33,11 @@ class RemindersApiController extends Controller
 
     public function store(Request $request)
     {
-        return Reminder::create($request->json()->all());
+        $params = $request->json()->all();
+
+        Log::debug("STORE: ".json_encode($params));
+
+        return Reminder::create($params);
     }
 
     public function show(Reminder $reminder)
@@ -43,6 +48,8 @@ class RemindersApiController extends Controller
     public function update(Request $request)
     {
         $params = $request->json()->all();
+
+        Log::debug("STORE: ".json_encode($params));
 
         if (!isset($params['id'])) {
             return ['error' => 'no id'];
