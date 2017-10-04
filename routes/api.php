@@ -16,3 +16,8 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/', 'RemindersApiController@index');
+Route::post('/new', 'RemindersApiController@store');
+Route::get('/{reminder}', 'RemindersApiController@show')->where(['reminder' => '[0-9]+']);
+Route::put('/{reminder}', 'RemindersApiController@update')->where(['reminder' => '[0-9]+']);
